@@ -1,0 +1,73 @@
+<% // This is a comment in EJS %>
+<% //getting data value of the  attribute 'data-roomid' from sartchat input tag %>
+<% //ejs is use type os html file that also helps to take datafrom backend or rend data%>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Chat Box</h1>
+                                                                 
+    <input id="startchat" type="hidden" data-roomid="<%=id%>">  //<%=id%> use to take data id from user,type is hidden means it doesn't show at rontend webpage 
+    <input type="text" id="username" placeholder="userId...">
+    <input type="text" id="newmsg" placeholder="message...">
+    <button id="btn">send</button>
+    
+    
+     <ul id="msglist">
+        <%    //fetching old chats from backend mongodb    %>
+        <%    //chatlist  %>
+     <% for(let i=0; i < chats.length; i++) { %>  
+        <li><%= chats[i].user %> : <%= chats[i].content %></li>
+     <% } %>
+     </ul>
+
+
+
+     
+
+    <script src="/socket.io/socket.io.js"></script>  <% // access io in frontend %><% //io object using the script tag %>
+    <script>
+        let username = document.getElementById('username')
+        let btn = document.getElementById('btn')
+        let inputMsg = document.getElementById('newmsg')
+        let msgList = document.getElementById('msglist')
+
+        
+        var socket = io()  //its started a connection event
+        //from any of the machine lets browser create websocket object then a new websocket connection is establish in backet server recive that connection usid io.on
+        //we make a socket connection here  
+
+
+        socket.emit('join_room',
+        {
+            roomid:startchat.getAttribute('data-roomid')
+        })
+       
+        btn.onclick = function exec() {
+            socket.emit('msg_send',
+                {
+                    msg: inputMsg.value,
+                    username:username.value,     
+                    roomid:startchat.getAttribute('data-roomid') 
+                    
+                }) 
+        }
+
+
+        socket.on('msg_rcvd', (data) => {
+            let limsg = document.createElement('li')
+            limsg.innerText = `${data.username}:${data.msg}`;
+            msgList.appendChild(limsg)
+        })
+   
+        
+    </script>
+</body>
+
+</html>
